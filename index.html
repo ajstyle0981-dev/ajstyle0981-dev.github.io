@@ -4,545 +4,197 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>موقعي الإخباري</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-
-  :root[data-theme="dark"] {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --card: #1c2230;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #00d4d4;
-    --accent2: #0099cc;
-    --nav-bg: #0d1117;
-    --hero-grad: linear-gradient(135deg, #0d1117 0%, #1a2a3a 100%);
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --surface: #161b22; --accent: #00d4aa; --accent2: #ff6b35;
+    --text: #e6edf3; --text-muted: #8b949e; --border: #30363d; --red: #f85149;
   }
-  :root[data-theme="light"] {
-    --bg: #f0f4f8;
-    --surface: #ffffff;
-    --card: #ffffff;
-    --border: #d0d7de;
-    --text: #1c2230;
-    --muted: #57606a;
-    --accent: #0099cc;
-    --accent2: #007aaa;
-    --nav-bg: #1c2230;
-    --hero-grad: linear-gradient(135deg, #e0f0ff 0%, #cce8f4 100%);
-  }
+  body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); transition: background .3s, color .3s; }
-
-  /* NAV */
-  nav {
-    background: var(--nav-bg);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,.4);
-  }
-  .nav-logo { color: var(--accent); font-weight: 900; font-size: 1.3rem; cursor: pointer; }
+  nav { background: rgba(13,17,23,0.97); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 1.3rem; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 0.4rem; }
+  .logo span { color: var(--text); }
   .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-  .nav-links a {
-    color: #ccc; text-decoration: none; font-size: .95rem;
-    transition: color .2s; cursor: pointer;
-  }
-  .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .search-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 1rem; color: var(--text); font-family: 'Cairo', sans-serif; font-size: 0.85rem; outline: none; width: 180px; }
+  .search-box:focus { border-color: var(--accent); }
 
-  /* SEARCH BAR */
-  .search-bar {
-    display: flex; align-items: center;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 4px 12px; gap: 6px;
-    transition: border .2s;
-  }
-  .search-bar:focus-within { border-color: var(--accent); }
-  .search-bar input {
-    background: none; border: none; outline: none;
-    color: var(--text); font-family: 'Cairo', sans-serif;
-    font-size: .9rem; width: 160px;
-  }
-  .search-bar input::placeholder { color: var(--muted); }
-  .search-icon { color: var(--muted); font-size: 1rem; }
+  .ticker { background: var(--red); padding: 0.45rem 0; overflow: hidden; display: flex; align-items: center; }
+  .ticker-label { background: #fff; color: var(--red); font-weight: 900; padding: 0.2rem 1rem; white-space: nowrap; font-size: 0.82rem; flex-shrink: 0; }
+  .ticker-track { display: flex; white-space: nowrap; gap: 3rem; padding: 0 2rem; color: #fff; font-size: 0.88rem; font-weight: 600; will-change: transform; }
 
-  /* TOGGLE */
-  .theme-toggle {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 6px 14px; cursor: pointer;
-    color: var(--text); font-size: .85rem; font-family: 'Cairo', sans-serif;
-    transition: all .2s;
+  /* HERO با gradient بدل صورة */
+  .hero { position: relative; height: 480px; overflow: hidden; cursor: pointer;
+    background: linear-gradient(135deg, #0d2137 0%, #0a3d2e 40%, #1a1a2e 100%); }
+  .hero-pattern {
+    position: absolute; inset: 0; opacity: 0.07;
+    background-image: radial-gradient(circle at 20% 50%, #00d4aa 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, #58a6ff 0%, transparent 40%),
+      radial-gradient(circle at 60% 80%, #ff6b35 0%, transparent 35%);
   }
-  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .hero-emoji { position: absolute; font-size: 12rem; opacity: 0.08; top: 50%; left: 50%; transform: translate(-50%, -50%); user-select: none; }
+  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,17,23,0.97) 0%, rgba(13,17,23,0.3) 60%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.5rem 2.5rem; }
+  .hero:hover .hero-pattern { opacity: 0.12; transition: opacity 0.4s; }
+  .hero-tag { display: inline-block; background: var(--accent); color: #000; font-size: 0.8rem; font-weight: 900; padding: 0.3rem 0.9rem; border-radius: 4px; margin-bottom: 1rem; width: fit-content; }
+  .hero-title { font-size: 2rem; font-weight: 900; line-height: 1.35; margin-bottom: 0.8rem; max-width: 680px; }
+  .hero-meta { color: var(--text-muted); font-size: 0.88rem; display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
 
-  /* HERO BANNER */
-  .hero-banner {
-    background: var(--accent);
-    color: #fff; text-align: center;
-    padding: 8px; font-size: .9rem; font-weight: 600;
-    letter-spacing: .5px;
-  }
+  .section { padding: 2.5rem 1.5rem; max-width: 1280px; margin: 0 auto; width: 100%; }
+  .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border); }
+  .section-title { font-size: 1.3rem; font-weight: 900; padding-right: 1rem; border-right: 4px solid var(--accent); }
 
-  /* PAGE SYSTEM */
-  .page { display: none; }
-  .page.active { display: block; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 
-  /* HOME HERO */
-  .home-hero {
-    background: var(--hero-grad);
-    text-align: center; padding: 60px 2rem 50px;
-    border-bottom: 1px solid var(--border);
-  }
-  .home-hero h1 { font-size: 2.8rem; font-weight: 900; color: var(--accent); margin-bottom: .5rem; }
-  .home-hero p { color: var(--muted); font-size: 1.1rem; margin-bottom: 1.5rem; }
-  .hero-btn {
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 25px; padding: 12px 32px;
-    font-size: 1rem; font-family: 'Cairo', sans-serif;
-    cursor: pointer; font-weight: 700; transition: background .2s, transform .15s;
-  }
-  .hero-btn:hover { background: var(--accent2); transform: translateY(-2px); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+  .card:hover { transform: translateY(-7px); border-color: var(--accent); box-shadow: 0 16px 48px rgba(0,212,170,0.12); }
 
-  /* SECTION TITLE */
-  .section-title {
-    font-size: 1.5rem; font-weight: 900;
-    color: var(--text); margin-bottom: 1.2rem;
-    display: flex; align-items: center; gap: .6rem;
-  }
-  .section-title::after {
-    content: ''; flex: 1; height: 2px;
-    background: linear-gradient(90deg, var(--accent), transparent);
-  }
+  /* بطاقة الصورة = gradient ملون بدل img */
+  .card-img-wrap { position: relative; height: 180px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .card-emoji-bg { font-size: 5rem; opacity: 0.35; user-select: none; transition: transform 0.4s; }
+  .card:hover .card-emoji-bg { transform: scale(1.2); }
 
-  /* CARDS GRID */
-  .section { padding: 2rem; max-width: 1100px; margin: 0 auto; }
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.2rem;
-  }
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; cursor: pointer;
-    transition: transform .2s, box-shadow .2s, border-color .2s;
-  }
-  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,212,212,.15); border-color: var(--accent); }
-  .card-img {
-    width: 100%; height: 160px; object-fit: cover;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 3rem; background: var(--surface);
-  }
-  .card-body { padding: 1rem; }
-  .card-tag {
-    display: inline-block; background: var(--accent);
-    color: #fff; font-size: .7rem; font-weight: 700;
-    border-radius: 4px; padding: 2px 8px; margin-bottom: .5rem;
-  }
-  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; line-height: 1.5; }
-  .card p { color: var(--muted); font-size: .85rem; line-height: 1.6; }
-  .card-meta { color: var(--muted); font-size: .75rem; margin-top: .6rem; }
+  .card-category { position: absolute; top: 0.75rem; right: 0.75rem; font-size: 0.73rem; font-weight: 900; padding: 0.25rem 0.7rem; border-radius: 4px; }
+  .cat-tech { background: #58a6ff; color: #000; }
+  .cat-sports { background: #3fb950; color: #000; }
+  .cat-world { background: #bc8cff; color: #000; }
 
-  /* SEARCH RESULTS */
-  .search-results-info {
-    color: var(--muted); font-size: .9rem; margin-bottom: 1rem;
-  }
-  .no-results {
-    text-align: center; padding: 3rem; color: var(--muted);
-    font-size: 1.1rem;
-  }
+  .bg-tech { background: linear-gradient(135deg, #0d2137, #0a2952); }
+  .bg-sports { background: linear-gradient(135deg, #0d2a15, #0a3322); }
+  .bg-world { background: linear-gradient(135deg, #1a0d37, #2a1050); }
 
-  /* ARTICLE PAGE */
-  .article-container { max-width: 760px; margin: 0 auto; padding: 2rem; }
-  .article-back {
-    display: inline-flex; align-items: center; gap: .4rem;
-    color: var(--accent); cursor: pointer; font-size: .9rem;
-    margin-bottom: 1.5rem; background: none; border: none;
-    font-family: 'Cairo', sans-serif; text-decoration: none;
-  }
-  .article-back:hover { text-decoration: underline; }
-  .article-tag {
-    display: inline-block; background: var(--accent);
-    color: #fff; font-size: .75rem; font-weight: 700;
-    border-radius: 4px; padding: 3px 10px; margin-bottom: .8rem;
-  }
-  .article-title { font-size: 2rem; font-weight: 900; line-height: 1.4; margin-bottom: .8rem; }
-  .article-meta { color: var(--muted); font-size: .85rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
-  .article-hero-img {
-    width: 100%; height: 280px;
-    background: var(--surface); border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 5rem; margin-bottom: 1.5rem;
-    border: 1px solid var(--border);
-  }
-  .article-content p { line-height: 1.9; margin-bottom: 1.2rem; color: var(--text); font-size: 1rem; }
-  .article-content h2 { font-size: 1.3rem; font-weight: 700; margin: 1.5rem 0 .7rem; color: var(--accent); }
+  .card-body { padding: 1.2rem; }
+  .card-title { font-size: 0.98rem; font-weight: 700; line-height: 1.5; margin-bottom: 0.6rem; }
+  .card-excerpt { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-muted); }
+  .read-more { color: var(--accent); font-weight: 700; opacity: 0; transition: opacity 0.2s; }
+  .card:hover .read-more { opacity: 1; }
 
-  /* COMMENTS */
-  .comments-section { margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
-  .comments-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; }
-  .comment-form { margin-bottom: 1.5rem; }
-  .comment-form input,
-  .comment-form textarea {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; color: var(--text);
-    font-family: 'Cairo', sans-serif; font-size: .9rem;
-    margin-bottom: .7rem; outline: none; transition: border .2s;
-    resize: vertical;
-  }
-  .comment-form input:focus,
-  .comment-form textarea:focus { border-color: var(--accent); }
-  .comment-submit {
-    background: var(--accent); color: #fff; border: none;
-    border-radius: 8px; padding: 10px 24px; cursor: pointer;
-    font-family: 'Cairo', sans-serif; font-size: .9rem; font-weight: 700;
-    transition: background .2s;
-  }
-  .comment-submit:hover { background: var(--accent2); }
-  .comment {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 1rem; margin-bottom: .8rem;
-  }
-  .comment-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; }
-  .comment-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .85rem;
-  }
-  .comment-name { font-weight: 700; font-size: .9rem; }
-  .comment-date { color: var(--muted); font-size: .75rem; margin-right: auto; }
-  .comment-text { color: var(--text); font-size: .9rem; line-height: 1.6; }
-  .no-comments { color: var(--muted); font-size: .9rem; text-align: center; padding: 1rem; }
+  footer { margin-top: auto; background: var(--surface); border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+  .footer-logo { font-size: 1.4rem; font-weight: 900; color: var(--accent); margin-bottom: 0.5rem; }
+  .footer-links { display: flex; justify-content: center; gap: 1.8rem; list-style: none; margin-bottom: 1rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy { color: var(--text-muted); font-size: 0.83rem; }
+  .footer-copy strong { color: var(--accent); }
 
-  /* TECH CARD DESIGN */
-  .tech-img {
-    width: 100%; height: 160px;
-    background: linear-gradient(135deg, #0a0e1a 0%, #0d2137 100%);
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+  @media (max-width: 768px) {
+    .hero { height: 360px; } .hero-title { font-size: 1.4rem; } .hero-overlay { padding: 1.5rem; }
+    .nav-links { display: none; } .section { padding: 1.5rem 1rem; }
+    .cards-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .hero-emoji { font-size: 7rem; }
   }
-  .tech-img::before {
-    content: "";
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(0,212,212,.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(0,153,204,.2) 0%, transparent 50%);
-    animation: pulse-bg 3s ease-in-out infinite alternate;
+  @media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr; }
   }
-  @keyframes pulse-bg { from { opacity: .5; } to { opacity: 1; } }
-  .tech-ring { animation: spin-ring 6s linear infinite; transform-origin: center; }
-  @keyframes spin-ring { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .tech-blink { animation: blink 1.5s ease-in-out infinite; }
-  .tech-blink:nth-child(2) { animation-delay: .5s; }
-  .tech-blink:nth-child(3) { animation-delay: 1s; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
-
-  /* FOOTER */
-  footer {
-    background: var(--nav-bg); border-top: 1px solid var(--border);
-    text-align: center; padding: 1.5rem; color: var(--muted);
-    font-size: .85rem; margin-top: 3rem;
-  }
-  footer span { color: var(--accent); }
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-logo" onclick="goHome()">📰 موقعي الإخباري</div>
+  <div class="logo">📰 <span>موقعي</span> الإخباري</div>
   <ul class="nav-links">
-    <li><a onclick="showCategory('home')" class="active" id="nav-home">الرئيسية</a></li>
-    <li><a onclick="showCategory('technology')" id="nav-technology">التكنولوجيا</a></li>
-
-    <li><a onclick="showCategory('sports')" id="nav-sports">الرياضة</a></li>
-    <li><a onclick="showCategory('world')" id="nav-world">العالم</a></li>
+    <li><a href="#">الرئيسية</a></li>
+    <li><a href="#">التكنولوجيا</a></li>
+    <li><a href="#">الرياضة</a></li>
+    <li><a href="#">العالم</a></li>
   </ul>
-  <div class="nav-right">
-    <div class="search-bar">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="ابحث في الأخبار..." oninput="doSearch(this.value)">
-    </div>
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 ليلي</button>
-  </div>
+  <input class="search-box" type="text" placeholder="🔍 ابحث في الأخبار...">
 </nav>
 
-<div class="hero-banner">🔴 عاجل: تابع آخر الأخبار لحظة بلحظة</div>
-
-<!-- HOME PAGE -->
-<div class="page active" id="page-home">
-  <div class="home-hero">
-    <h1>مرحباً بك! 👋</h1>
-    <p>موقعك الإخباري الأول — أخبار التكنولوجيا والرياضة والعالم</p>
-    <button class="hero-btn" onclick="showCategory('technology')">استكشف الأخبار</button>
-  </div>
-  <div class="section">
-    <div class="section-title">🔥 أبرز الأخبار</div>
-    <div class="cards-grid" id="featured-grid"></div>
+<div class="ticker">
+  <div class="ticker-label">عاجل</div>
+  <div class="ticker-track" id="tickerTrack">
+    <span>🔴 الذكاء الاصطناعي يحدث ثورة في عالم الطب</span>
+    <span>⚽ فريق محلي يحقق بطولة سباق الدراجات الوطنية</span>
+    <span>🌍 مؤتمر عالمي لمناقشة التغيرات المناخية</span>
+    <span>💡 تقنية جديدة لتوليد الطاقة من الهواء</span>
+    <span>🏆 منتخبنا يتأهل إلى نصف النهائي</span>
   </div>
 </div>
 
-<!-- CATEGORY PAGE -->
-<div class="page" id="page-category">
-  <div class="section">
-    <div class="section-title" id="category-title">الأخبار</div>
-    <div class="cards-grid" id="category-grid"></div>
-  </div>
-</div>
-
-<!-- SEARCH PAGE -->
-<div class="page" id="page-search">
-  <div class="section">
-    <div class="section-title">🔍 نتائج البحث</div>
-    <div class="search-results-info" id="search-info"></div>
-    <div class="cards-grid" id="search-grid"></div>
-  </div>
-</div>
-
-<!-- ARTICLE PAGE -->
-<div class="page" id="page-article">
-  <div class="article-container">
-    <button class="article-back" onclick="goBack()">← العودة</button>
-    <div id="article-content"></div>
-    <div class="comments-section">
-      <div class="comments-title">💬 التعليقات</div>
-      <div class="comment-form">
-        <input type="text" id="commentName" placeholder="اسمك">
-        <textarea id="commentText" rows="3" placeholder="اكتب تعليقك هنا..."></textarea>
-        <button class="comment-submit" onclick="addComment()">إرسال التعليق</button>
-      </div>
-      <div id="comments-list"></div>
+<div class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-emoji">🤖</div>
+  <div class="hero-overlay">
+    <span class="hero-tag">🤖 تكنولوجيا</span>
+    <h1 class="hero-title">الذكاء الاصطناعي يُحدث ثورة في عالم الطب: تشخيص الأمراض بدقة تفوق الأطباء</h1>
+    <div class="hero-meta">
+      <span>📅 18 يونيو 2026</span>
+      <span>🕐 الساعة 2:11 مساءً</span>
+      <span>👁 12,450 مشاهدة</span>
     </div>
   </div>
 </div>
 
-<footer>صُنع بـ ❤️ — <span>موقعي الإخباري</span> © 2026</footer>
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">🔥 أبرز الأخبار</div>
+  </div>
+  <div class="cards-grid" id="cardsContainer"></div>
+</div>
+
+<footer>
+  <div class="footer-logo">📰 موقعي الإخباري</div>
+  <ul class="footer-links">
+    <li><a href="#">الرئيسية</a></li>
+    <li><a href="#">من نحن</a></li>
+    <li><a href="#">اتصل بنا</a></li>
+    <li><a href="#">سياسة الخصوصية</a></li>
+    <li><a href="#">الشروط والأحكام</a></li>
+  </ul>
+  <p class="footer-copy">© 2026 جميع الحقوق محفوظة لـ <strong>Tweety</strong> — موقعك الإخباري الأول</p>
+</footer>
 
 <script>
-  const articles = [
-    {
-      id: 1, category: 'technology',
-      tag: 'تكنولوجيا', emoji: 'TECH_SVG',
-      title: 'الذكاء الاصطناعي يُحدث ثورة في عالم الطب',
-      summary: 'اكتشف العلماء كيف يمكن للذكاء الاصطناعي تشخيص الأمراض بدقة تفوق الأطباء في بعض الحالات.',
-      date: '١٤ يونيو ٢٠٢٦', author: 'أحمد محمد',
-      body: `<p>يشهد العالم الطبي تحولاً جذرياً مع دخول الذكاء الاصطناعي إلى غرف العمليات وعيادات التشخيص. باتت الأنظمة الذكية قادرة على تحليل صور الأشعة بدقة مذهلة تتجاوز في بعض الأحيان خبرة المتخصصين البشريين.</p>
-      <h2>كيف يعمل؟</h2>
-      <p>تعتمد هذه الأنظمة على شبكات عصبية عميقة تم تدريبها على ملايين الصور الطبية، مما يمكّنها من رصد الأورام والكسور والالتهابات في مراحلها الأولى.</p>
-      <p>وقد أظهرت الدراسات الحديثة أن دقة هذه الأنظمة في الكشف عن سرطان الثدي بلغت ٩٤٪، مقارنةً بـ ٨٨٪ للأطباء المتخصصين.</p>
-      <h2>مستقبل الطب</h2>
-      <p>يرى الخبراء أن الذكاء الاصطناعي لن يحلّ محل الأطباء بل سيكون أداةً داعمة تساعدهم على اتخاذ قرارات أدق وأسرع، مما سيُنقذ ملايين الأرواح حول العالم.</p>`
-    },
-    {
-      id: 2, category: 'sports',
-      tag: 'رياضة', emoji: '🚴',
-      title: 'فريق محلي يُحقق بطولة سباق الدراجات الوطنية',
-      summary: 'حقق الفريق الوطني إنجازاً تاريخياً في بطولة سباقات الدراجات الهوائية بعد منافسة شرسة.',
-      date: '١٣ يونيو ٢٠٢٦', author: 'سارة علي',
-      body: `<p>رفع الفريق الوطني كأس البطولة بعد سباق مثير امتد على مسافة ٢٠٠ كيلومتر عبر مناطق متنوعة من البلاد.</p>
-      <h2>أبرز اللحظات</h2>
-      <p>تميّز الفريق في المرحلة الجبلية التي كانت الأصعب، حيث تفوّق الرياضيون على منافسيهم بفضل التدريب المكثف والاستراتيجية الذكية.</p>
-      <p>قال قائد الفريق: "إنجازنا هذا ثمرة سنوات من العمل والتضحية، ونهديه لكل مشجع وفيّ."</p>
-      <h2>الطريق للأمام</h2>
-      <p>ينتظر الفريق مشاركة دولية قادمة الشهر المقبل، حيث سيواجه أبطال من عشرين دولة.</p>`
-    },
-    {
-      id: 3, category: 'world',
-      tag: 'العالم', emoji: '🌍',
-      title: 'مؤتمر عالمي لمناقشة التغيرات المناخية',
-      summary: 'التقى قادة العالم في قمة مناخية كبرى لمناقشة خطط الطوارئ لمواجهة الاحترار العالمي.',
-      date: '١٢ يونيو ٢٠٢٦', author: 'خالد إبراهيم',
-      body: `<p>استضافت جنيف قمة مناخية طارئة جمعت قادة من ١٨٠ دولة لوضع خطط عملية للحد من انبعاثات الكربون قبل نهاية العقد الحالي.</p>
-      <h2>أبرز القرارات</h2>
-      <p>اتفقت الدول الكبرى على خفض انبعاثاتها ٥٠٪ بحلول عام ٢٠٣٥، مع تخصيص ٥٠٠ مليار دولار لدعم الدول النامية في التحول للطاقة النظيفة.</p>
-      <p>وشدّد المنظمون على أن هذه القمة تمثل اللحظة الأخيرة لاتخاذ قرارات جادة قبل تجاوز نقطة اللاعودة المناخية.</p>
-      <h2>ردود الفعل</h2>
-      <p>رحّبت منظمات البيئة بهذه القرارات لكنها طالبت بآليات تنفيذ وإلزام قانوني صارم.</p>`
-    },
-    {
-      id: 4, category: 'technology',
-      tag: 'تكنولوجيا', emoji: '🚀',
-      title: 'شركة ناشئة تطلق هاتفاً يشحن بالطاقة الشمسية',
-      summary: 'هاتف ثوري يعمل بخلايا شمسية مدمجة تمنحه طاقة لا محدودة في الهواء الطلق.',
-      date: '١١ يونيو ٢٠٢٦', author: 'منى حسن',
-      body: `<p>أعلنت شركة ناشئة عن إطلاق هاتفها الذكي الذي يضم خلايا شمسية مدمجة في الشاشة والغطاء الخلفي، مما يجعله الأول من نوعه عالمياً.</p>
-      <h2>المواصفات</h2>
-      <p>يتميز الهاتف بشاشة AMOLED مدمجة بطبقة رقيقة من الخلايا الضوئية، وبطارية ذكية تُشحن تلقائياً عند التعرض لأشعة الشمس لمدة ثلاث ساعات يومياً.</p>
-      <p>ويدعم الجهاز شبكات الجيل الخامس ويأتي بكاميرا ثلاثية بدقة ٢٠٠ ميغابيكسل.</p>
-      <h2>الأسعار والتوافر</h2>
-      <p>سيكون الهاتف متاحاً في الأسواق بحلول أكتوبر القادم بسعر يبدأ من ٨٠٠ دولار.</p>`
-    },
-    {
-      id: 5, category: 'sports',
-      tag: 'رياضة', emoji: '⚽',
-      title: 'منتخب الشباب يتأهل لنهائيات كأس القارات',
-      summary: 'فوز مثير بهدفين مقابل هدف يؤهل منتخب الشباب للدور الأخير من البطولة القارية.',
-      date: '١٠ يونيو ٢٠٢٦', author: 'يوسف كريم',
-      body: `<p>حقق منتخب الشباب فوزاً تاريخياً بهدفين مقابل هدف أمام المنتخب البرازيلي في مباراة مثيرة أمام ٦٠ ألف مشجع.</p>
-      <h2>أحداث المباراة</h2>
-      <p>سجّل اللاعب عمر الشريف هدف التقدم في الدقيقة ٣٢، قبل أن يضيف زميله هدفاً ثانياً ذهبياً في الوقت القاتل.</p>
-      <p>وأشاد المدرب بأداء اللاعبين قائلاً: "قاتلوا كالأبطال وهذا التأهل مستحق."</p>
-      <h2>النهائي القادم</h2>
-      <p>سيواجه المنتخب في النهائي نظيره الأرجنتيني الذي تأهل بفوز كاسح على المنتخب الإيطالي.</p>`
-    },
-    {
-      id: 6, category: 'world',
-      tag: 'العالم', emoji: '🛰️',
-      title: 'محطة فضائية جديدة تبدأ عملها على مدار القمر',
-      summary: 'وكالات الفضاء العالمية تعلن نجاح إطلاق أول محطة فضائية تدور حول القمر.',
-      date: '٩ يونيو ٢٠٢٦', author: 'ريم الناصر',
-      body: `<p>أعلنت وكالات الفضاء الدولية بنجاح عن دخول المحطة الفضائية القمرية "لونار ون" مدارها المحدد حول القمر بعد رحلة استغرقت أربعة أيام.</p>
-      <h2>أهمية المحطة</h2>
-      <p>تُعدّ هذه المحطة قفزة نوعية نحو استعمار الفضاء، إذ ستكون نقطة عبور للبعثات نحو المريخ وستضم طاقماً دائماً من ٦ رواد فضاء.</p>
-      <p>وتتضمن المحطة مختبرات علمية ووحدات سكنية ومشاتل للزراعة الفضائية.</p>
-      <h2>الخطط المستقبلية</h2>
-      <p>تخطط الوكالات لإطلاق أول بعثة مأهولة دائمة إلى المحطة بحلول عام ٢٠٢٨.</p>`
-    },
-    {
-      id: 7, category: 'world',
-      tag: 'العالم', emoji: '🌍',
-      title: 'آخر المستجدات في السودان',
-      summary: 'تطورات متسارعة على الساحة السودانية وسط جهود دولية لإيجاد حل سياسي للأزمة.',
-      date: '١٤ يونيو ٢٠٢٦', author: 'محمد أحمد',
-      body: `<p>تشهد الساحة السودانية تطورات متسارعة في ظل الجهود الدولية والإقليمية.</p>
-      <h2>الوضع الإنساني</h2>
-      <p>تواصل المنظمات الدولية تقديم المساعدات الإنسانية للمتضررين في مختلف الولايات السودانية.</p>
-      <h2>الجهود الدبلوماسية</h2>
-      <p>تكثّف الدول المجاورة جهودها لجمع الأطراف على طاولة الحوار وتحقيق السلام.</p>
-      <h2>آفاق المستقبل</h2>
-      <p>يتطلع الشعب السوداني إلى مستقبل مستقر يحقق التنمية والازدهار.</p>`
-    },
-  ];
+const articles = [
+  { id:1, title:"الذكاء الاصطناعي يُحدث ثورة في عالم الطب", excerpt:"كشف باحثون عن نظام ذكاء اصطناعي قادر على تشخيص الأمراض السرطانية بدقة تفوق 97% مقارنة بالأطباء البشريين.", category:"تكنولوجيا", catClass:"cat-tech", bgClass:"bg-tech", emoji:"🤖", date:"18 يونيو 2026", time:"2:11 م" },
+  { id:2, title:"فريق محلي يحقق بطولة سباق الدراجات الوطنية", excerpt:"في إنجاز رياضي مميز، تمكّن الفريق الوطني للدراجات من الفوز بالبطولة الوطنية بعد منافسة شرسة.", category:"رياضة", catClass:"cat-sports", bgClass:"bg-sports", emoji:"🚴", date:"18 يونيو 2026", time:"1:45 م" },
+  { id:3, title:"مؤتمر عالمي لمناقشة التغيرات المناخية", excerpt:"تجتمع قادة العالم في قمة دولية للبحث عن حلول جذرية لمواجهة تحديات تغيّر المناخ والاحترار العالمي.", category:"العالم", catClass:"cat-world", bgClass:"bg-world", emoji:"🌍", date:"17 يونيو 2026", time:"10:30 ص" },
+  { id:4, title:"تطبيق جديد يُترجم لغة الإشارة بالذكاء الاصطناعي", excerpt:"أطلقت شركة ناشئة تطبيقاً ثورياً يستخدم كاميرا الهاتف لترجمة لغة الإشارة إلى نص مكتوب فورياً.", category:"تكنولوجيا", catClass:"cat-tech", bgClass:"bg-tech", emoji:"👋", date:"17 يونيو 2026", time:"9:00 ص" },
+  { id:5, title:"المنتخب الوطني يتأهل إلى نصف النهائي", excerpt:"حقق المنتخب الوطني فوزاً تاريخياً بثلاثة أهداف مقابل هدف واحد ليتأهل إلى الدور النصف نهائي.", category:"رياضة", catClass:"cat-sports", bgClass:"bg-sports", emoji:"⚽", date:"16 يونيو 2026", time:"8:20 م" },
+  { id:6, title:"اكتشاف كوكب جديد قابل للحياة خارج المجموعة الشمسية", excerpt:"أعلنت وكالة ناسا عن اكتشاف كوكب جديد يقع على مسافة 40 سنة ضوئية ويمتلك ظروفاً مناسبة للحياة.", category:"العالم", catClass:"cat-world", bgClass:"bg-world", emoji:"🪐", date:"16 يونيو 2026", time:"3:00 م" }
+];
 
-  const comments = {};
-  let currentArticle = null;
-  let prevPage = 'home';
-  let currentCategory = 'home';
-
-  function renderCards(list, containerId) {
-    const el = document.getElementById(containerId);
-    if (!list.length) { el.innerHTML = '<div class="no-results">لا توجد نتائج</div>'; return; }
-    el.innerHTML = list.map(a => `
-      <div class="card" onclick="openArticle(${a.id})">
-        <div class="${a.emoji === 'TECH_SVG' ? 'tech-img' : 'card-img'}">${a.emoji === 'TECH_SVG' ? `<svg width='120' height='100' viewBox='0 0 120 100' fill='none' xmlns='http://www.w3.org/2000/svg'>
-        <circle cx='60' cy='50' r='30' stroke='#00d4d4' stroke-width='1.5' stroke-dasharray='4 3' class='tech-ring'/>
-        <circle cx='60' cy='50' r='18' stroke='#0099cc' stroke-width='1' opacity='.6'/>
-        <circle cx='60' cy='50' r='6' fill='#00d4d4' class='tech-blink'/>
-        <circle cx='60' cy='20' r='3' fill='#00d4d4' class='tech-blink'/>
-        <circle cx='60' cy='80' r='3' fill='#00d4d4' class='tech-blink'/>
-        <circle cx='30' cy='50' r='3' fill='#0099cc' class='tech-blink'/>
-        <circle cx='90' cy='50' r='3' fill='#0099cc' class='tech-blink'/>
-        <line x1='20' y1='30' x2='40' y2='50' stroke='#00d4d4' stroke-width='1' opacity='.5'/>
-        <line x1='100' y1='30' x2='80' y2='50' stroke='#00d4d4' stroke-width='1' opacity='.5'/>
-        <line x1='20' y1='70' x2='40' y2='50' stroke='#0099cc' stroke-width='1' opacity='.5'/>
-        <line x1='100' y1='70' x2='80' y2='50' stroke='#0099cc' stroke-width='1' opacity='.5'/>
-        <text x='60' y='54' text-anchor='middle' fill='#00d4d4' font-size='8' font-family='Cairo,sans-serif' font-weight='700'>TECH</text>
-      </svg>` : a.emoji}</div>
-        <div class="card-body">
-          <span class="card-tag">${a.tag}</span>
-          <h3>${a.title}</h3>
-          <p>${a.summary}</p>
-          <div class="card-meta">📅 ${a.date} · ✍️ ${a.author}</div>
+function renderCards() {
+  const container = document.getElementById('cardsContainer');
+  container.innerHTML = articles.map(a => `
+    <div class="card">
+      <div class="card-img-wrap ${a.bgClass}">
+        <span class="card-emoji-bg">${a.emoji}</span>
+        <span class="card-category ${a.catClass}">${a.emoji} ${a.category}</span>
+      </div>
+      <div class="card-body">
+        <h3 class="card-title">${a.title}</h3>
+        <p class="card-excerpt">${a.excerpt}</p>
+        <div class="card-footer">
+          <span>📅 ${a.date} · 🕐 ${a.time}</span>
+          <span class="read-more">اقرأ المزيد ←</span>
         </div>
-      </div>`).join('');
-  }
+      </div>
+    </div>
+  `).join('');
+}
 
-  function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-  }
+renderCards();
 
-  function goHome() {
-    clearSearch();
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    document.getElementById('nav-home').classList.add('active');
-    showPage('home');
-    currentCategory = 'home';
+// شريط الأخبار المتحرك
+(function() {
+  const track = document.getElementById('tickerTrack');
+  if (!track) return;
+  track.innerHTML += track.innerHTML;
+  let pos = 0;
+  function move() {
+    pos -= 0.7;
+    const half = track.scrollWidth / 2;
+    if (Math.abs(pos) >= half) pos = 0;
+    track.style.transform = 'translateX(' + pos + 'px)';
+    requestAnimationFrame(move);
   }
-
-  function showCategory(cat) {
-    clearSearch();
-    currentCategory = cat;
-    if (cat === 'home') { goHome(); return; }
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    const navEl = document.getElementById('nav-' + cat);
-    if (navEl) navEl.classList.add('active');
-    const labels = { technology: '💻 التكنولوجيا', sports: '⚽ الرياضة', world: '🌍 العالم' };
-    document.getElementById('category-title').textContent = labels[cat] || cat;
-    renderCards(articles.filter(a => a.category === cat), 'category-grid');
-    prevPage = 'category';
-    showPage('category');
-  }
-
-  function openArticle(id) {
-    currentArticle = articles.find(a => a.id === id);
-    if (!currentArticle) return;
-    document.getElementById('article-content').innerHTML = `
-      <span class="article-tag">${currentArticle.tag}</span>
-      <h1 class="article-title">${currentArticle.title}</h1>
-      <div class="article-meta">📅 ${currentArticle.date} · ✍️ ${currentArticle.author}</div>
-      <div class="article-hero-img">${currentArticle.emoji}</div>
-      <div class="article-content">${currentArticle.body}</div>
-    `;
-    renderComments(id);
-    showPage('article');
-  }
-
-  function goBack() {
-    showPage(prevPage === 'search' ? 'search' : (currentCategory === 'home' ? 'home' : 'category'));
-  }
-
-  function renderComments(articleId) {
-    const list = comments[articleId] || [];
-    const el = document.getElementById('comments-list');
-    if (!list.length) { el.innerHTML = '<div class="no-comments">لا توجد تعليقات بعد — كن أول المعلقين!</div>'; return; }
-    el.innerHTML = list.map(c => `
-      <div class="comment">
-        <div class="comment-header">
-          <div class="comment-avatar">${c.name[0]}</div>
-          <span class="comment-name">${c.name}</span>
-          <span class="comment-date">${c.date}</span>
-        </div>
-        <div class="comment-text">${c.text}</div>
-      </div>`).join('');
-  }
-
-  function addComment() {
-    const name = document.getElementById('commentName').value.trim();
-    const text = document.getElementById('commentText').value.trim();
-    if (!name || !text || !currentArticle) return;
-    if (!comments[currentArticle.id]) comments[currentArticle.id] = [];
-    comments[currentArticle.id].unshift({ name, text, date: 'الآن' });
-    document.getElementById('commentName').value = '';
-    document.getElementById('commentText').value = '';
-    renderComments(currentArticle.id);
-  }
-
-  function doSearch(q) {
-    q = q.trim();
-    if (!q) { if (document.getElementById('page-search').classList.contains('active')) goHome(); return; }
-    prevPage = 'search';
-    const results = articles.filter(a => a.title.includes(q) || a.summary.includes(q) || a.tag.includes(q));
-    document.getElementById('search-info').textContent = `وجدنا ${results.length} نتيجة لـ "${q}"`;
-    renderCards(results, 'search-grid');
-    showPage('search');
-  }
-
-  function clearSearch() {
-    document.getElementById('searchInput').value = '';
-  }
-
-  function toggleTheme() {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('themeBtn').textContent = isDark ? '🌙 ليلي' : '☀️ نهاري';
-  }
-
-  // Init
-  renderCards(articles, 'featured-grid');
+  requestAnimationFrame(move);
+})();
 </script>
 </body>
 </html>
