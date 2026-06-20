@@ -65,6 +65,20 @@
   .match-vs { font-size: 1rem; font-weight: 900; color: var(--text-muted); padding: 0 0.5rem; }
   .match-date { margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); text-align: center; }
 
+  /* قسم ترتيب المجموعات */
+  .standings-controls { margin-bottom: 1.2rem; }
+  .group-select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1.1rem; color: var(--text); font-family: 'Cairo', sans-serif; font-size: 0.9rem; font-weight: 700; outline: none; }
+  .group-select:focus { border-color: var(--accent); }
+  .standings-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+  .standings-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 480px; }
+  .standings-table th, .standings-table td { padding: 0.7rem 0.7rem; text-align: center; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .standings-table th { color: var(--text-muted); font-weight: 700; font-size: 0.74rem; }
+  .standings-table tbody tr:last-child td { border-bottom: none; }
+  .standings-table tbody tr:nth-child(-n+2) { background: rgba(0,212,170,0.06); }
+  .standings-team-cell { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-start; }
+  .standings-flag { width: 24px; height: 18px; object-fit: cover; border-radius: 3px; border: 1px solid var(--border); flex-shrink: 0; }
+  .standings-pts { color: var(--accent); font-weight: 900; }
+
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
   .card:hover { transform: translateY(-7px); border-color: var(--accent); box-shadow: 0 16px 48px rgba(0,212,170,0.12); }
 
@@ -155,6 +169,31 @@
 
 <div class="section">
   <div class="section-header">
+    <div class="section-title">🏆 ترتيب المجموعات</div>
+  </div>
+  <div class="standings-controls">
+    <select id="groupSelect" class="group-select">
+      <option value="A">المجموعة A</option>
+      <option value="B">المجموعة B</option>
+      <option value="C">المجموعة C</option>
+      <option value="D">المجموعة D</option>
+      <option value="E">المجموعة E</option>
+      <option value="F">المجموعة F</option>
+      <option value="G">المجموعة G</option>
+      <option value="H">المجموعة H</option>
+      <option value="I">المجموعة I</option>
+      <option value="J">المجموعة J</option>
+      <option value="K">المجموعة K</option>
+      <option value="L">المجموعة L</option>
+    </select>
+  </div>
+  <div id="standingsContainer">
+    <div style="color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل الترتيب...</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
     <div class="section-title">🔥 أبرز الأخبار</div>
   </div>
   <div class="cards-grid" id="cardsContainer"></div>
@@ -241,70 +280,151 @@ async function fetchWorldCupData() {
   throw lastError || new Error("تعذر الوصول لأي مصدر");
 }
 
-async function renderMatches() {
+async function renderMatches(data) {
   const container = document.getElementById('matchesContainer');
   if (!container) return;
-  container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل نتائج كأس العالم...</div>';
+  const today = new Date().toISOString().slice(0, 10);
+
+  // نتجاهل أدوار خروج المغلوب التي لا تزال أسماء فرقها غير محسومة (مثل "1A" أو "3C/D/F")
+  const real = data.matches.filter(m => teamAr[m.team1] && teamAr[m.team2]);
+
+  const played = real.filter(m => m.score && m.score.ft).sort((a, b) => b.date.localeCompare(a.date));
+  const upcoming = real.filter(m => !(m.score && m.score.ft)).sort((a, b) => a.date.localeCompare(b.date));
+  const todays = upcoming.filter(m => m.date === today);
+  const nextUp = upcoming.filter(m => m.date !== today).slice(0, Math.max(0, 2 - todays.length));
+
+  const list = [...todays, ...nextUp, ...played.slice(0, 6)];
+
+  if (list.length === 0) {
+    container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">لا توجد نتائج متاحة حاليًا.</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(m => {
+    const [name1, code1] = teamAr[m.team1];
+    const [name2, code2] = teamAr[m.team2];
+    const group = (m.group || '').replace('Group ', '');
+    const isDone = m.score && m.score.ft;
+    const isToday = m.date === today;
+    const statusLabel = isDone ? 'انتهت' : (isToday ? 'اليوم' : 'قادمة');
+    const statusClass = isDone ? 'status-done' : 'status-today';
+    const scoreHtml = isDone
+      ? `<span class="match-score">${m.score.ft[0]} - ${m.score.ft[1]}</span>`
+      : `<span class="match-vs">VS</span>`;
+    const [y, mo, d] = m.date.split('-');
+    const dateLabel = `${parseInt(d)} ${arabicMonths[parseInt(mo) - 1]} ${y}`;
+    return `
+      <div class="match-card">
+        <div class="match-top">
+          <span class="match-group">المجموعة ${group}</span>
+          <span class="match-status ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="match-teams">
+          <div class="match-team">
+            <img class="match-flag" src="https://flagcdn.com/w80/${code1}.png" alt="${name1}" loading="lazy">
+            <span class="match-team-name">${name1}</span>
+          </div>
+          ${scoreHtml}
+          <div class="match-team">
+            <img class="match-flag" src="https://flagcdn.com/w80/${code2}.png" alt="${name2}" loading="lazy">
+            <span class="match-team-name">${name2}</span>
+          </div>
+        </div>
+        <div class="match-date">📅 ${dateLabel}</div>
+      </div>`;
+  }).join('');
+}
+
+// حساب ترتيب مجموعة معينة من نتائج المباريات الفعلية (نظام 3 نقاط للفوز، 1 للتعادل)
+function computeStandings(matches, groupLetter) {
+  const groupMatches = matches.filter(m => m.group === ('Group ' + groupLetter) && teamAr[m.team1] && teamAr[m.team2]);
+  const teams = {};
+  function ensure(name) {
+    if (!teams[name]) teams[name] = { name, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 };
+    return teams[name];
+  }
+  groupMatches.forEach(m => {
+    ensure(m.team1); ensure(m.team2);
+    if (m.score && m.score.ft) {
+      const [s1, s2] = m.score.ft;
+      const t1 = teams[m.team1], t2 = teams[m.team2];
+      t1.played++; t2.played++;
+      t1.gf += s1; t1.ga += s2;
+      t2.gf += s2; t2.ga += s1;
+      if (s1 > s2) { t1.w++; t2.l++; }
+      else if (s1 < s2) { t2.w++; t1.l++; }
+      else { t1.d++; t2.d++; }
+    }
+  });
+  return Object.values(teams)
+    .map(t => ({ ...t, gd: t.gf - t.ga, pts: t.w * 3 + t.d }))
+    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+}
+
+function renderStandingsTable(matches, groupLetter) {
+  const container = document.getElementById('standingsContainer');
+  if (!container) return;
+  const table = computeStandings(matches, groupLetter);
+  if (table.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted); padding:1rem; text-align:center;">لا توجد بيانات لهذه المجموعة حاليًا.</div>';
+    return;
+  }
+  const rows = table.map((t, i) => {
+    const info = teamAr[t.name];
+    const name = info ? info[0] : t.name;
+    const code = info ? info[1] : null;
+    const flagImg = code ? `<img class="standings-flag" src="https://flagcdn.com/w40/${code}.png" alt="${name}" loading="lazy">` : '';
+    const gdLabel = t.gd > 0 ? '+' + t.gd : String(t.gd);
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td><div class="standings-team-cell">${flagImg}<span>${name}</span></div></td>
+        <td>${t.played}</td>
+        <td>${t.w}</td>
+        <td>${t.d}</td>
+        <td>${t.l}</td>
+        <td>${gdLabel}</td>
+        <td class="standings-pts">${t.pts}</td>
+      </tr>`;
+  }).join('');
+  container.innerHTML = `
+    <div class="standings-wrap">
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th>#</th><th>المنتخب</th><th>لعب</th><th>فوز</th><th>تعادل</th><th>خسارة</th><th>فرق</th><th>نقاط</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function setupStandings(data) {
+  const select = document.getElementById('groupSelect');
+  if (!select) return;
+  select.addEventListener('change', () => renderStandingsTable(data.matches, select.value));
+  renderStandingsTable(data.matches, select.value);
+}
+
+async function initWorldCup() {
+  const matchesEl = document.getElementById('matchesContainer');
+  const standingsEl = document.getElementById('standingsContainer');
+  if (matchesEl) matchesEl.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل نتائج كأس العالم...</div>';
   try {
     const data = await fetchWorldCupData();
-    const today = new Date().toISOString().slice(0, 10);
-
-    // نتجاهل أدوار خروج المغلوب التي لا تزال أسماء فرقها غير محسومة (مثل "1A" أو "3C/D/F")
-    const real = data.matches.filter(m => teamAr[m.team1] && teamAr[m.team2]);
-
-    const played = real.filter(m => m.score && m.score.ft).sort((a, b) => b.date.localeCompare(a.date));
-    const upcoming = real.filter(m => !(m.score && m.score.ft)).sort((a, b) => a.date.localeCompare(b.date));
-    const todays = upcoming.filter(m => m.date === today);
-    const nextUp = upcoming.filter(m => m.date !== today).slice(0, Math.max(0, 2 - todays.length));
-
-    const list = [...todays, ...nextUp, ...played.slice(0, 6)];
-
-    if (list.length === 0) {
-      container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">لا توجد نتائج متاحة حاليًا.</div>';
-      return;
-    }
-
-    container.innerHTML = list.map(m => {
-      const [name1, code1] = teamAr[m.team1];
-      const [name2, code2] = teamAr[m.team2];
-      const group = (m.group || '').replace('Group ', '');
-      const isDone = m.score && m.score.ft;
-      const isToday = m.date === today;
-      const statusLabel = isDone ? 'انتهت' : (isToday ? 'اليوم' : 'قادمة');
-      const statusClass = isDone ? 'status-done' : 'status-today';
-      const scoreHtml = isDone
-        ? `<span class="match-score">${m.score.ft[0]} - ${m.score.ft[1]}</span>`
-        : `<span class="match-vs">VS</span>`;
-      const [y, mo, d] = m.date.split('-');
-      const dateLabel = `${parseInt(d)} ${arabicMonths[parseInt(mo) - 1]} ${y}`;
-      return `
-        <div class="match-card">
-          <div class="match-top">
-            <span class="match-group">المجموعة ${group}</span>
-            <span class="match-status ${statusClass}">${statusLabel}</span>
-          </div>
-          <div class="match-teams">
-            <div class="match-team">
-              <img class="match-flag" src="https://flagcdn.com/w80/${code1}.png" alt="${name1}" loading="lazy">
-              <span class="match-team-name">${name1}</span>
-            </div>
-            ${scoreHtml}
-            <div class="match-team">
-              <img class="match-flag" src="https://flagcdn.com/w80/${code2}.png" alt="${name2}" loading="lazy">
-              <span class="match-team-name">${name2}</span>
-            </div>
-          </div>
-          <div class="match-date">📅 ${dateLabel}</div>
-        </div>`;
-    }).join('');
+    await renderMatches(data);
+    setupStandings(data);
   } catch (e) {
-    console.error("خطأ في تحميل نتائج كأس العالم:", e);
-    container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⚠️ تعذر تحميل النتائج (' + (e && e.message ? e.message : 'خطأ غير معروف') + '). افتح أدوات المطوّر (F12) → Console لمزيد من التفاصيل.</div>';
+    console.error("خطأ في تحميل بيانات كأس العالم:", e);
+    const errMsg = '⚠️ تعذر تحميل البيانات (' + (e && e.message ? e.message : 'خطأ غير معروف') + '). افتح أدوات المطوّر (F12) → Console لمزيد من التفاصيل.';
+    if (matchesEl) matchesEl.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">' + errMsg + '</div>';
+    if (standingsEl) standingsEl.innerHTML = '<div style="color:var(--text-muted); padding:1rem; text-align:center;">' + errMsg + '</div>';
   }
 }
 
 renderCards();
-renderMatches();
+initWorldCup();
 
 // شريط الأخبار المتحرك
 (function() {
