@@ -48,6 +48,23 @@
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 
+  /* قسم نتائج كأس العالم */
+  .matches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.2rem; }
+  .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+  .match-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 16px 48px rgba(0,212,170,0.12); }
+  .match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; font-size: 0.75rem; color: var(--text-muted); }
+  .match-group { font-weight: 700; }
+  .match-status { font-weight: 900; padding: 0.18rem 0.6rem; border-radius: 4px; font-size: 0.68rem; }
+  .status-done { background: #3fb950; color: #000; }
+  .status-today { background: var(--accent2); color: #000; }
+  .match-teams { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .match-team { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; text-align: center; }
+  .match-flag { width: 32px; height: 24px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+  .match-team-name { font-size: 0.83rem; font-weight: 700; line-height: 1.3; }
+  .match-score { font-size: 1.4rem; font-weight: 900; color: var(--accent); padding: 0 0.5rem; white-space: nowrap; }
+  .match-vs { font-size: 1rem; font-weight: 900; color: var(--text-muted); padding: 0 0.5rem; }
+  .match-date { margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
   .card:hover { transform: translateY(-7px); border-color: var(--accent); box-shadow: 0 16px 48px rgba(0,212,170,0.12); }
 
@@ -131,6 +148,13 @@
 
 <div class="section">
   <div class="section-header">
+    <div class="section-title">⚽ نتائج كأس العالم 2026</div>
+  </div>
+  <div class="matches-grid" id="matchesContainer"></div>
+</div>
+
+<div class="section">
+  <div class="section-header">
     <div class="section-title">🔥 أبرز الأخبار</div>
   </div>
   <div class="cards-grid" id="cardsContainer"></div>
@@ -178,7 +202,109 @@ function renderCards() {
   `).join('');
 }
 
+// قاموس ترجمة أسماء المنتخبات + رمز الدولة (ISO) لاستخدامه مع صور أعلام حقيقية بدل الإيموجي
+const teamAr = {
+  "Mexico":["المكسيك","mx"], "South Africa":["جنوب أفريقيا","za"], "South Korea":["كوريا الجنوبية","kr"],
+  "Czech Republic":["التشيك","cz"], "Canada":["كندا","ca"], "Bosnia & Herzegovina":["البوسنة والهرسك","ba"],
+  "Qatar":["قطر","qa"], "Switzerland":["سويسرا","ch"], "Brazil":["البرازيل","br"], "Morocco":["المغرب","ma"],
+  "Haiti":["هايتي","ht"], "Scotland":["اسكتلندا","gb-sct"], "USA":["الولايات المتحدة","us"], "Paraguay":["باراغواي","py"],
+  "Australia":["أستراليا","au"], "Turkey":["تركيا","tr"], "Germany":["ألمانيا","de"], "Curaçao":["كوراساو","cw"],
+  "Ivory Coast":["ساحل العاج","ci"], "Ecuador":["الإكوادور","ec"], "Netherlands":["هولندا","nl"], "Japan":["اليابان","jp"],
+  "Sweden":["السويد","se"], "Tunisia":["تونس","tn"], "Belgium":["بلجيكا","be"], "Egypt":["مصر","eg"],
+  "Iran":["إيران","ir"], "New Zealand":["نيوزيلندا","nz"], "Spain":["إسبانيا","es"], "Cape Verde":["الرأس الأخضر","cv"],
+  "Saudi Arabia":["السعودية","sa"], "Uruguay":["الأوروغواي","uy"], "France":["فرنسا","fr"], "Senegal":["السنغال","sn"],
+  "Iraq":["العراق","iq"], "Norway":["النرويج","no"], "Argentina":["الأرجنتين","ar"], "Algeria":["الجزائر","dz"],
+  "Austria":["النمسا","at"], "Jordan":["الأردن","jo"], "Portugal":["البرتغال","pt"], "DR Congo":["الكونغو الديمقراطية","cd"],
+  "Uzbekistan":["أوزبكستان","uz"], "Colombia":["كولومبيا","co"], "England":["إنجلترا","gb-eng"], "Croatia":["كرواتيا","hr"],
+  "Ghana":["غانا","gh"], "Panama":["بنما","pa"]
+};
+const arabicMonths = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+// مصدر بيانات حقيقي ومجاني لكأس العالم 2026 (بدون مفتاح API) — نحاول أكثر من مصدر لضمان الثبات
+const WORLD_CUP_DATA_URLS = [
+  "https://cdn.jsdelivr.net/gh/openfootball/worldcup.json@master/2026/worldcup.json",
+  "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json"
+];
+
+async function fetchWorldCupData() {
+  let lastError = null;
+  for (const url of WORLD_CUP_DATA_URLS) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json();
+    } catch (e) {
+      lastError = e;
+      console.warn("فشل التحميل من:", url, e);
+    }
+  }
+  throw lastError || new Error("تعذر الوصول لأي مصدر");
+}
+
+async function renderMatches() {
+  const container = document.getElementById('matchesContainer');
+  if (!container) return;
+  container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل نتائج كأس العالم...</div>';
+  try {
+    const data = await fetchWorldCupData();
+    const today = new Date().toISOString().slice(0, 10);
+
+    // نتجاهل أدوار خروج المغلوب التي لا تزال أسماء فرقها غير محسومة (مثل "1A" أو "3C/D/F")
+    const real = data.matches.filter(m => teamAr[m.team1] && teamAr[m.team2]);
+
+    const played = real.filter(m => m.score && m.score.ft).sort((a, b) => b.date.localeCompare(a.date));
+    const upcoming = real.filter(m => !(m.score && m.score.ft)).sort((a, b) => a.date.localeCompare(b.date));
+    const todays = upcoming.filter(m => m.date === today);
+    const nextUp = upcoming.filter(m => m.date !== today).slice(0, Math.max(0, 2 - todays.length));
+
+    const list = [...todays, ...nextUp, ...played.slice(0, 6)];
+
+    if (list.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">لا توجد نتائج متاحة حاليًا.</div>';
+      return;
+    }
+
+    container.innerHTML = list.map(m => {
+      const [name1, code1] = teamAr[m.team1];
+      const [name2, code2] = teamAr[m.team2];
+      const group = (m.group || '').replace('Group ', '');
+      const isDone = m.score && m.score.ft;
+      const isToday = m.date === today;
+      const statusLabel = isDone ? 'انتهت' : (isToday ? 'اليوم' : 'قادمة');
+      const statusClass = isDone ? 'status-done' : 'status-today';
+      const scoreHtml = isDone
+        ? `<span class="match-score">${m.score.ft[0]} - ${m.score.ft[1]}</span>`
+        : `<span class="match-vs">VS</span>`;
+      const [y, mo, d] = m.date.split('-');
+      const dateLabel = `${parseInt(d)} ${arabicMonths[parseInt(mo) - 1]} ${y}`;
+      return `
+        <div class="match-card">
+          <div class="match-top">
+            <span class="match-group">المجموعة ${group}</span>
+            <span class="match-status ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="match-teams">
+            <div class="match-team">
+              <img class="match-flag" src="https://flagcdn.com/w80/${code1}.png" alt="${name1}" loading="lazy">
+              <span class="match-team-name">${name1}</span>
+            </div>
+            ${scoreHtml}
+            <div class="match-team">
+              <img class="match-flag" src="https://flagcdn.com/w80/${code2}.png" alt="${name2}" loading="lazy">
+              <span class="match-team-name">${name2}</span>
+            </div>
+          </div>
+          <div class="match-date">📅 ${dateLabel}</div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    console.error("خطأ في تحميل نتائج كأس العالم:", e);
+    container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⚠️ تعذر تحميل النتائج (' + (e && e.message ? e.message : 'خطأ غير معروف') + '). افتح أدوات المطوّر (F12) → Console لمزيد من التفاصيل.</div>';
+  }
+}
+
 renderCards();
+renderMatches();
 
 // شريط الأخبار المتحرك
 (function() {
