@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>موقعي الإخباري</title>
+<title>تويتي الإخبارية</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,9 +11,14 @@
     --bg: #0d1117; --surface: #161b22; --accent: #00d4aa; --accent2: #ff6b35;
     --text: #e6edf3; --text-muted: #8b949e; --border: #30363d; --red: #f85149;
   }
+  :root[data-theme="light"] {
+    --bg: #f6f8fa; --surface: #ffffff; --accent: #00a884; --accent2: #ff6b35;
+    --text: #1a1f24; --text-muted: #57606a; --border: #d0d7de; --red: #cf222e;
+  }
+  body, nav, .card, .match-card, .standings-wrap, .contact-card, footer { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
   body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-  nav { background: rgba(13,17,23,0.97); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  nav { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
   .logo { font-size: 1.3rem; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 0.4rem; }
   .logo span { color: var(--text); }
   .nav-links { display: flex; gap: 1.5rem; list-style: none; }
@@ -21,6 +26,9 @@
   .nav-links a:hover { color: var(--accent); }
   .search-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 1rem; color: var(--text); font-family: 'Cairo', sans-serif; font-size: 0.85rem; outline: none; width: 180px; }
   .search-box:focus { border-color: var(--accent); }
+  .theme-toggle { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); transition: border-color 0.2s, color 0.2s, background-color 0.3s; flex-shrink: 0; }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .theme-toggle svg { width: 18px; height: 18px; }
 
   .ticker { background: var(--red); padding: 0.45rem 0; overflow: hidden; display: flex; align-items: center; }
   .ticker-label { background: #fff; color: var(--red); font-weight: 900; padding: 0.2rem 1rem; white-space: nowrap; font-size: 0.82rem; flex-shrink: 0; }
@@ -95,6 +103,10 @@
   .bg-tech { background: linear-gradient(135deg, #0d2137, #0a2952); }
   .bg-sports { background: linear-gradient(135deg, #0d2a15, #0a3322); }
   .bg-world { background: linear-gradient(135deg, #1a0d37, #2a1050); }
+  .bg-news { background: linear-gradient(135deg, #1a2233, #0f3b3a); }
+  .card-real-img { width: 100%; height: 100%; object-fit: cover; }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); margin-left: 0.4rem; animation: pulse-dot 1.4s infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   .card-body { padding: 1.2rem; }
   .card-title { font-size: 0.98rem; font-weight: 700; line-height: 1.5; margin-bottom: 0.6rem; }
@@ -148,14 +160,20 @@
 <body>
 
 <nav>
-  <div class="logo">📰 <span>موقعي</span> الإخباري</div>
+  <div class="logo">📰 <span>تويتي</span> الإخبارية</div>
   <ul class="nav-links">
     <li><a href="#">الرئيسية</a></li>
     <li><a href="#">التكنولوجيا</a></li>
     <li><a href="#">الرياضة</a></li>
     <li><a href="#">العالم</a></li>
   </ul>
-  <input class="search-box" type="text" placeholder="🔍 ابحث في الأخبار...">
+  <div style="display:flex; align-items:center; gap:0.7rem;">
+    <input class="search-box" type="text" placeholder="🔍 ابحث في الأخبار...">
+    <button id="themeToggle" class="theme-toggle" aria-label="تبديل الوضع الليلي/النهاري" title="تبديل الوضع الليلي/النهاري">
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
 </nav>
 
 <div class="ticker">
@@ -222,6 +240,15 @@
   <div class="cards-grid" id="cardsContainer"></div>
 </div>
 
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">📰 آخر الأخبار <span class="live-dot"></span></div>
+  </div>
+  <div class="cards-grid" id="liveNewsContainer">
+    <div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل آخر الأخبار...</div>
+  </div>
+</div>
+
 <div class="section" id="contact">
   <div class="section-header">
     <div class="section-title">📞 تواصل معنا</div>
@@ -264,7 +291,7 @@
 </div>
 
 <footer>
-  <div class="footer-logo">📰 موقعي الإخباري</div>
+  <div class="footer-logo">📰 تويتي الإخبارية</div>
   <ul class="footer-links">
     <li><a href="#">الرئيسية</a></li>
     <li><a href="#">من نحن</a></li>
@@ -272,7 +299,7 @@
     <li><a href="#">سياسة الخصوصية</a></li>
     <li><a href="#">الشروط والأحكام</a></li>
   </ul>
-  <p class="footer-copy">© 2026 جميع الحقوق محفوظة لـ <strong>Tweety</strong> — موقعك الإخباري الأول</p>
+  <p class="footer-copy">© 2026 جميع الحقوق محفوظة لـ <strong>تويتي الإخبارية</strong> — موقعك الإخباري الأول</p>
 </footer>
 
 <script>
@@ -490,6 +517,95 @@ async function initWorldCup() {
 renderCards();
 initWorldCup();
 
+// قسم الأخبار الحية: نجلب نشرة بي بي سي عربي الحقيقية من نسخة بي بي سي الرسمية المستضافة على GitHub Pages
+// (GitHub Pages يسمح بالوصول من أي موقع تلقائيًا CORS، فمفيش حاجة وسيطة ممكن تتعطل)
+const NEWS_SOURCE_URL = 'https://bbc.github.io/world-service-rss/arabic.html';
+
+function cleanDateText(str) {
+  // نحذف الثواني من التاريخ المنسق عربيًا أصلاً من بي بي سي مثل "الثلاثاء، 16 يونيو 2026 في 4:39:34 م"
+  return (str || '').replace(/(\d{1,2}:\d{2}):\d{2}/, '$1').trim();
+}
+
+function parseBbcArabicPage(doc) {
+  const headlines = Array.from(doc.querySelectorAll('h2'));
+  const items = [];
+  for (const h2 of headlines) {
+    const a = h2.querySelector('a');
+    if (!a) continue;
+    const title = a.textContent.trim();
+    const link = a.getAttribute('href') || '#';
+    let img = '', dateText = '', desc = '';
+    let node = h2.nextElementSibling;
+    while (node && node.tagName !== 'H2') {
+      if (!img) {
+        const imgEl = node.tagName === 'IMG' ? node : node.querySelector?.('img');
+        if (imgEl) img = imgEl.getAttribute('src') || '';
+      }
+      if (!dateText) {
+        const emEl = node.tagName === 'EM' ? node : node.querySelector?.('em');
+        if (emEl) dateText = emEl.textContent.trim();
+      }
+      if (!desc && node.tagName === 'P' && !node.querySelector('img') && !node.querySelector('em')) {
+        const t = node.textContent.trim();
+        if (t) desc = t;
+      }
+      node = node.nextElementSibling;
+    }
+    if (title && link) items.push({ title, link, img, date: cleanDateText(dateText), desc });
+    if (items.length >= 6) break;
+  }
+  return items;
+}
+
+async function renderLiveNews() {
+  const container = document.getElementById('liveNewsContainer');
+  if (!container) return;
+  container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⏳ جاري تحميل آخر الأخبار...</div>';
+  try {
+    const res = await fetch(NEWS_SOURCE_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const items = parseBbcArabicPage(doc);
+
+    if (items.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">لا توجد أخبار متاحة حاليًا.</div>';
+      return;
+    }
+
+    container.innerHTML = items.map(item => {
+      const isSports = /كأس العالم|مونديال|رياض|مباراة|منتخب/.test(item.title);
+      const catClass = isSports ? 'cat-sports' : 'cat-world';
+      const bgClass = isSports ? 'bg-sports' : 'bg-news';
+      const emoji = isSports ? '⚽' : '📰';
+      const category = isSports ? 'رياضة' : 'أخبار';
+      const imgHtml = item.img
+        ? `<img class="card-real-img" src="${item.img}" alt="${item.title}" loading="lazy">`
+        : `<span class="card-emoji-bg">${emoji}</span>`;
+      return `
+        <a class="card" href="${item.link}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
+          <div class="card-img-wrap ${bgClass}">
+            ${imgHtml}
+            <span class="card-category ${catClass}">${emoji} ${category}</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">${item.title}</h3>
+            <p class="card-excerpt">${item.desc}</p>
+            <div class="card-footer">
+              <span>📅 ${item.date || 'بي بي سي عربي'}</span>
+              <span class="read-more">اقرأ المزيد ←</span>
+            </div>
+          </div>
+        </a>`;
+    }).join('');
+  } catch (e) {
+    console.error('خطأ في تحميل الأخبار الحية:', e);
+    container.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); padding:1rem; text-align:center;">⚠️ تعذر تحميل الأخبار حاليًا (' + (e && e.message ? e.message : 'خطأ غير معروف') + '). جرّب تحديث الصفحة بعد قليل.</div>';
+  }
+}
+
+renderLiveNews();
+
 // شريط الأخبار المتحرك
 (function() {
   const track = document.getElementById('tickerTrack');
@@ -504,6 +620,25 @@ initWorldCup();
     requestAnimationFrame(move);
   }
   requestAnimationFrame(move);
+})();
+
+// تبديل الوضع الليلي/النهاري
+(function() {
+  const htmlEl = document.documentElement;
+  const toggleBtn = document.getElementById('themeToggle');
+  const iconSun = document.getElementById('iconSun');
+  const iconMoon = document.getElementById('iconMoon');
+  if (!toggleBtn) return;
+  function applyTheme(theme) {
+    htmlEl.setAttribute('data-theme', theme);
+    iconSun.style.display = theme === 'dark' ? 'block' : 'none';
+    iconMoon.style.display = theme === 'light' ? 'block' : 'none';
+  }
+  applyTheme('dark');
+  toggleBtn.addEventListener('click', () => {
+    const current = htmlEl.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
 })();
 </script>
 </body>
